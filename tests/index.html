@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ru">
+<head>
+
+<meta charset="utf-8"/>
+
+</head>
+<body>
+<style>
+
+html {
+    font-size: 15px;
+}
+
+body {
+    margin: 0;
+    background: #fff;
+    color: #000;
+    overflow-y: scroll;
+}
+
+.container {
+    min-height: 30em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+table, table th, table td {
+    border: 1px solid rgba(0,0,0,0.1);
+    border-collapse: collapse;
+}
+
+table th, table td {
+    padding: 0.25rem 0.5rem;
+    text-align: left;
+    font-weight: normal;
+}
+
+[data-xl-align=right] {
+    text-align: right;
+}
+
+[data-xl-bold=on] {
+    font-weight: bold;
+}
+
+button.export {
+    margin: 1rem;
+    cursor: pointer;
+}
+
+</style>
+
+<div class="container">
+
+<table class="sample">
+<tr>
+    <th data-xl-bold="on">Идентификатор</th>
+    <th data-xl-bold="on">Город</th>
+    <th data-xl-bold="on" data-xl-align="right">Население</th>
+</tr>
+<tr>
+    <td>78123</td>
+    <td>Урюпинск</td>
+    <td data-xl-align="right">23709</td>
+</tr>
+<tr>
+    <td>34224</td>
+    <td>Тюмень</td>
+    <td data-xl-align="right">992311</td>
+</tr>
+<tr>
+    <td>22333</td>
+    <td>Ульяновск</td>
+    <td data-xl-align="right">2349833</td>
+</tr>
+</table>
+
+<button class="export">Export</button>
+    
+</div>
+
+<script type="module">
+
+import exportToExcel from '../dist/xlexport.esm.min.js'
+
+const table = document.querySelector('table')
+const button = document.querySelector('button.export')
+
+button.addEventListener('click', () => {
+    exportToExcel(table, "Пример выгрузки.xlsx")
+})
+
+</script>
+</body>
+</html>

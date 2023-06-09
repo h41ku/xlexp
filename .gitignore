@@ -1,0 +1,6 @@
+.tmp/
+.vscode/
+package-lock.json
+node_modules/
+TODO.md
+dist/*.LICENSE.txt
