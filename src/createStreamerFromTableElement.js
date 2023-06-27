@@ -6,7 +6,7 @@ export default function createStreamerFromTableElement(tableElement) {
 
     return {
 
-        streamAll(callback) {
+        async streamAll(callback) {
             trElements.forEach(trElement => {
                 const values = []
                 const styles = []

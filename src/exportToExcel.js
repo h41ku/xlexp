@@ -26,7 +26,7 @@ export default async function exportToExcel(streamer) { // returns Blob
         return i
     }
 
-    streamer.streamAll((values, styles) => {
+    await streamer.streamAll((values, styles) => {
         const row = []
         let colNo = 0
         values.forEach((value, i) => {
