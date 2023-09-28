@@ -26,6 +26,12 @@ export default async function exportToExcel(streamer) { // returns Blob
         return i
     }
 
+    const frozenPosition = streamer.frozenPosition
+        ? await streamer.frozenPosition()
+        : { x: 0, y: 0 }
+
+// console.log(getColumnNameByIndex(frozenPosition.x) + (frozenPosition.y + 1))
+
     await streamer.streamAll((values, styles) => {
         const row = []
         let colNo = 0
@@ -45,7 +51,9 @@ export default async function exportToExcel(streamer) { // returns Blob
             colNo ++
             count ++
         })
-        result += `<row r="${ rowNo }" spans="1:${row.length}">\n${ row.join('\n') }\n</row>\n`
+        if (row.length > 0) {
+            result += `<row r="${ rowNo }" spans="1:${row.length}">\n${ row.join('\n') }\n</row>\n`
+        }
         rowNo ++
         dimensions.rows ++
     })
@@ -522,7 +530,7 @@ export default async function exportToExcel(streamer) { // returns Blob
   <dimension ref="A1:${ getColumnNameByIndex(dimensions.cols) + dimensions.rows }" />
   <sheetViews>
     <sheetView tabSelected="1" workbookViewId="0">
-      <pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen" />
+      <pane xSplit="${frozenPosition.x}" ySplit="${frozenPosition.y}" topLeftCell="${getColumnNameByIndex(frozenPosition.x) + (frozenPosition.y + 1)}" activePane="bottomLeft" state="frozen" />
       <selection pane="bottomLeft" activeCell="A2" sqref="A2" />
     </sheetView>
   </sheetViews>
