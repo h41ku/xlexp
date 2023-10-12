@@ -32,7 +32,7 @@ export default async function exportToExcel(streamer) { // returns Blob
 
 // console.log(getColumnNameByIndex(frozenPosition.x) + (frozenPosition.y + 1))
 
-    await streamer.streamAll((values, styles) => {
+    await streamer.streamAll((values, styles, doComputeExtrems = true) => {
         const row = []
         let colNo = 0
         values.forEach((value, i) => {
@@ -45,8 +45,10 @@ export default async function exportToExcel(streamer) { // returns Blob
             if (dimensions.cols < colNo) {
                 dimensions.cols = colNo
             }
-            if (columnsExtrems[colNo] === undefined || columnsExtrems[colNo].value.length < value.length) {
-                columnsExtrems[colNo] = { value }
+            if (doComputeExtrems) {
+                if (columnsExtrems[colNo] === undefined || columnsExtrems[colNo].value.length < value.length) {
+                    columnsExtrems[colNo] = { value }
+                }
             }
             colNo ++
             count ++
