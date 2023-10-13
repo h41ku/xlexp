@@ -36,7 +36,8 @@ export default async function exportToExcel(streamer) { // returns Blob
         const row = []
         let colNo = 0
         values.forEach((value, i) => {
-            const styleId = getStyleId(styles[i])
+            const style = styles[i]
+            const styleId = getStyleId(style)
             let stringId = strings.indexOf(value)
             if (stringId < 0) {
                 stringId = strings.push(value) - 1
@@ -47,7 +48,7 @@ export default async function exportToExcel(streamer) { // returns Blob
             }
             if (doComputeExtrems) {
                 if (columnsExtrems[colNo] === undefined || columnsExtrems[colNo].value.length < value.length) {
-                    columnsExtrems[colNo] = { value }
+                    columnsExtrems[colNo] = { value, isBold: style.isBold }
                 }
             }
             colNo ++
@@ -61,7 +62,7 @@ export default async function exportToExcel(streamer) { // returns Blob
     })
 
     columnsExtrems.forEach(col => {
-        col.width = col.value.length + 2
+        col.width = (col.value.length + 2) * (col.isBold ? 1.1 : 1)
     })
     
     strings = '<?xml version="1.0" encoding="utf-8" standalone="yes"?>'
