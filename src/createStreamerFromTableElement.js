@@ -8,14 +8,38 @@ export default function createStreamerFromTableElement(tableElement, skipEmptyRo
         const values = []
         const styles = []
         rowElement.querySelectorAll(cellsSelector).forEach(cellElement => {
-            const isHidden = cellElement.dataset.xlHidden || false
+            const opts = cellElement.dataset
+            const isHidden = opts.xlHidden || false
             if (isHidden) {
                 return
             }
-            styles.push(new CellStyle(
-                cellElement.dataset.xlHalign,
-                cellElement.dataset.xlBold ? true : false
-            ))
+            const cellStyle = new CellStyle()
+            cellStyle.setFont(
+                opts.xlFont ? opts.xlFont : CellStyle.FONT_NAME_DEFAULT,
+                opts.xlFontSize ? opts.xlFontSize : CellStyle.FONT_SIZE_DEFAULT,
+                opts.xlColor,
+                opts.xlBold ? true : false,
+                opts.xlItalic ? true : false,
+                opts.xlUnderline ? true : false,
+                opts.xlStrikethrough ? true : false
+            )
+            cellStyle.setAlignment(
+                opts.xlHalign,
+                opts.xlValign,
+                opts.xlWrap
+            )
+            cellStyle.setBorderLeft(opts.xlBorderLeft || opts.xlBorder)
+            cellStyle.setBorderRight(opts.xlBorderRight || opts.xlBorder)
+            cellStyle.setBorderTop(opts.xlBorderTop || opts.xlBorder)
+            cellStyle.setBorderBottom(opts.xlBorderBottom || opts.xlBorder)
+            cellStyle.setBorderDiagonal(opts.xlBorderDiagonal)
+            cellStyle.setFill(
+                opts.xlForegroundColor || opts.xlBackgroundColor
+                    ? CellStyle.FILL_PATTERN_SOLID
+                    : CellStyle.FILL_PATTERN_NONE,
+                opts.xlBackgroundColor
+            )
+            styles.push(cellStyle)
             values.push(cellElement.innerText) // type of value must be a string
         })
         if (!skipEmptyRows || values.length > 0) {

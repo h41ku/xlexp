@@ -2,12 +2,16 @@ import JSZip from 'jszip'
 import CellStyle from './CellStyle.js'
 import getColumnNameByIndex from './getColumnNameByIndex.js'
 
+const buildStyle = (fontId, alignmentId, borderId, fillId) => ({ fontId, alignmentId, borderId, fillId })
+const stylesAreEquals = (a, b) => (
+    a.fontId === b.fontId
+    && a.alignmentId === b.alignmentId
+    && a.borderId === b.borderId
+    && a.fillId === b.fillId
+)
+
 export default async function exportToExcel(streamer) { // returns Blob
 
-    const fontName = 'Calibri'
-    const fontSize = 11
-
-    let strings = []
     let count = 0
     let rowNo = 1
     let result = ''
@@ -17,59 +21,89 @@ export default async function exportToExcel(streamer) { // returns Blob
     }
     const columnsExtrems = []
 
-    const styles = [ new CellStyle() ]
-    const getStyleId = style => {
-        let i = styles.findIndex(item => item.isEquals(style))
+    const fonts = []
+    const alignments = []
+    const borders = []
+    const fills = []
+    const styles = []
+    let strings = []
+
+    const getId = (haystack, comparator) => target => {
+        const criteria = typeof comparator === 'function'
+          ? item => comparator(item, target)
+          : item => item[comparator](target)
+        let i = haystack.findIndex(criteria)
         if (i < 0) {
-            i = styles.push(style) - 1
+            i = haystack.push(target) - 1
         }
         return i
     }
+
+    const getFontId = getId(fonts, 'fontsAreEquals')
+    const getAlignmentId = getId(alignments, 'alignmentsAreEquals')
+    const getBorderId = getId(borders, 'bordersAreEquals')
+    const getFillId = getId(fills, 'fillsAreEquals')
+    const getStyleId = getId(styles, stylesAreEquals)
+    const getStringId = getId(strings, (a, b) => a === b)
 
     const frozenPosition = streamer.frozenPosition
         ? await streamer.frozenPosition()
         : { x: 0, y: 0 }
 
-// console.log(getColumnNameByIndex(frozenPosition.x) + (frozenPosition.y + 1))
-
     await streamer.streamAll((values, styles, doComputeExtrems = true) => {
         const row = []
         let colNo = 0
+        let maxFontSize = null
         values.forEach((value, i) => {
-            const style = styles[i]
-            const styleId = getStyleId(style)
-            let stringId = strings.indexOf(value)
-            if (stringId < 0) {
-                stringId = strings.push(value) - 1
-            }
+            const cellStyle = styles[i]
+            const fontId = getFontId(cellStyle)
+            const alignmentId = getAlignmentId(cellStyle)
+            const borderId = getBorderId(cellStyle)
+            const fillId = getFillId(cellStyle)
+            const styleId = getStyleId(buildStyle(fontId, alignmentId, borderId, fillId))
+            const stringId = getStringId(value)
             row.push(`<c r="${ getColumnNameByIndex(colNo) + rowNo }" s="${ styleId }" t="s"><v>${ stringId }</v></c>`)
             if (dimensions.cols < colNo) {
                 dimensions.cols = colNo
             }
             if (doComputeExtrems) {
-                if (columnsExtrems[colNo] === undefined || columnsExtrems[colNo].value.length < value.length) {
-                    columnsExtrems[colNo] = { value, isBold: style.isBold }
+                if (columnsExtrems[colNo] === undefined) {
+                    columnsExtrems[colNo] = {
+                        value,
+                        isStyled: cellStyle.font.bold,
+                        maxFontSize: cellStyle.font.size
+                    }
+                } else {
+                    if (columnsExtrems[colNo].value.length < value.length) {
+                        columnsExtrems[colNo].value = value
+                        columnsExtrems[colNo].isStyled = cellStyle.font.bold
+                    }
+                    if (columnsExtrems[colNo].maxFontSize < cellStyle.font.size) {
+                        columnsExtrems[colNo].maxFontSize = cellStyle.font.size
+                    }
                 }
+            }
+            if (maxFontSize === null || maxFontSize < cellStyle.font.size) {
+                maxFontSize = cellStyle.font.size
             }
             colNo ++
             count ++
         })
         if (row.length > 0) {
-            result += `<row r="${ rowNo }" spans="1:${row.length}">\n${ row.join('\n') }\n</row>\n`
+            result += `<row r="${ rowNo }" spans="1:${row.length}"${ maxFontSize !== null && maxFontSize !== CellStyle.FONT_SIZE_DEFAULT ? ` ht="${ Math.round((maxFontSize * 15.0) / CellStyle.FONT_SIZE_DEFAULT) }" customHeight="1"` : `` }>\n${ row.join('\n') }\n</row>\n`
         }
         rowNo ++
         dimensions.rows ++
     })
 
     columnsExtrems.forEach(col => {
-        col.width = (col.value.length + 2) * (col.isBold ? 1.1 : 1)
+        col.width = (col.value.length + 2) * (col.isStyled ? 1.1 : 1) * (col.maxFontSize / CellStyle.FONT_SIZE_DEFAULT)
     })
     
     strings = '<?xml version="1.0" encoding="utf-8" standalone="yes"?>'
     + `<sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="${ count }" uniqueCount="${ strings.length }">\n`
     + strings.map(value => `<si><t>${ value }</t></si>`).join('\n')
     + '\n</sst>'
-    // console.log(strings)
 
     const root = new JSZip()
 
@@ -476,48 +510,68 @@ export default async function exportToExcel(streamer) { // returns Blob
 
     xl.file('styles.xml', `<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
-  <fonts count="2">
-    <font>
-      <sz val="${ fontSize }" />
-      <color theme="1" />
-      <name val="${ fontName }" />
-      <family val="2" />
-      <scheme val="minor" />
-    </font>
-    <font>
-      <b />
-      <sz val="${ fontSize }" />
-      <color theme="1" />
-      <name val="${ fontName }" />
-      <family val="2" />
-      <charset val="204" />
-      <scheme val="minor" />
-    </font>
+  <fonts count="${ fonts.length }">
+    ${ fonts.map(item => `
+      <font>
+        ${ item.font.bold ? `<b />` : ``}
+        ${ item.font.italic ? `<i val="true" />` : ``}
+        ${ item.font.underline ? `<u val="single" />` : ``}
+        ${ item.font.strikethrough ? `<strike val="true" />` : ``}
+        <sz val="${ item.font.size }" />
+        <color ${ item.font.color === CellStyle.COLOR_DEFAULT ? `theme="1"` : `rgb="${item.font.color}"` } />
+        <name val="${ item.font.name }" />
+        <family val="2" />
+        <charset val="204" />
+        <scheme val="minor" />
+      </font>
+    `).join('\n') }
   </fonts>
-  <fills count="2">
-    <fill>
-      <patternFill patternType="none" />
-    </fill>
-    <fill>
-      <patternFill patternType="gray125" />
-    </fill>
+  <fills count="${ fills.length }">
+    ${ fills.map(item => `
+      <fill>
+        <patternFill patternType="${ item.fill.pattern }">
+          ${ item.fill.pattern === CellStyle.FILL_PATTERN_SOLID && item.fill.bgColor !== CellStyle.COLOR_DEFAULT ? `<fgColor rgb="${ item.fill.bgColor }"/>` : ``}
+          ${ item.fill.pattern === CellStyle.FILL_PATTERN_SOLID && item.fill.bgColor !== CellStyle.COLOR_DEFAULT ? `<bgColor rgb="${ item.fill.bgColor }"/>` : ``}
+        </patternFill>
+      </fill>
+    `).join('\n') }
   </fills>
-  <borders count="1">
-    <border>
-      <left />
-      <right />
-      <top />
-      <bottom />
-      <diagonal />
-    </border>
+  <borders count="${ borders.length }">
+    ${ borders.map(item => `
+       <border>
+          <left${ item.borderLeft.thickness !== CellStyle.BORDER_THICKNESS_NONE ? ` style="${ item.borderLeft.thickness }"` : `` }>
+             ${ item.borderLeft.thickness !== CellStyle.BORDER_THICKNESS_NONE ? `<color indexed="${ item.borderLeft.color }"/>` : `` }
+          </left>
+          <right${ item.borderRight.thickness !== CellStyle.BORDER_THICKNESS_NONE ? ` style="${ item.borderRight.thickness }"` : `` }>
+             ${ item.borderRight.thickness !== CellStyle.BORDER_THICKNESS_NONE ? `<color indexed="${ item.borderRight.color }"/>` : `` }
+          </right>
+          <top${ item.borderTop.thickness !== CellStyle.BORDER_THICKNESS_NONE ? ` style="${ item.borderTop.thickness }"` : `` }>
+             ${ item.borderTop.thickness !== CellStyle.BORDER_THICKNESS_NONE ? `<color indexed="${ item.borderTop.color }"/>` : `` }
+          </top>
+          <bottom${ item.borderBottom.thickness !== CellStyle.BORDER_THICKNESS_NONE ? ` style="${ item.borderBottom.thickness }"` : `` }>
+             ${ item.borderBottom.thickness !== CellStyle.BORDER_THICKNESS_NONE ? `<color indexed="${ item.borderBottom.color }"/>` : `` }
+          </bottom>
+          <diagonal${ item.borderDiagonal.thickness !== CellStyle.BORDER_THICKNESS_NONE ? ` style="${ item.borderDiagonal.thickness }"` : `` }>
+             ${ item.borderDiagonal.thickness !== CellStyle.BORDER_THICKNESS_NONE ? `<color indexed="${ item.borderDiagonal.color }"/>` : `` }
+          </diagonal>
+       </border>
+    `).join('\n') }
   </borders>
   <cellStyleXfs count="1">
     <xf numFmtId="0" fontId="0" fillId="0" borderId="0" />
   </cellStyleXfs>
   <cellXfs count="${ styles.length }">
-    ${ styles.map(style => `<xf numFmtId="0" fontId="${ style.isBold ? 1 : 0 }" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"${ style.isBold ? ' applyFont="1"' : '' } applyAlignment="1">
-      <alignment horizontal="${ style.horizontalAlignment }"/>
-    </xf>`).join('\n') }
+    ${ styles.map(item => {
+      // const font = fonts[item.fontId]
+      const alignment = alignments[item.alignmentId]
+      const border = borders[item.borderId]
+      const fill = fills[item.fillId]
+      return `
+      <xf numFmtId="0" fontId="${ item.fontId }" fillId="${ item.fillId }" borderId="${ item.borderId }" xfId="0" applyNumberFormat="1" applyFont="1"${ alignment.hasAlignments() ? ` applyAlignment="1"` : `` }${ border.hasBorders() ? ` applyBorder="1"` : `` }${ fill.hasFills() ? ` applyFill="1"` : `` }>
+        ${ alignment.hasAlignments() ? `<alignment${ alignment.alignment.horizontal !== CellStyle.HORIZONTAL_ALIGNMENT_DEFAULT ? ` horizontal="${ alignment.alignment.horizontal }"` : `` }${ alignment.alignment.vertical !== CellStyle.VERTICAL_ALIGNMENT_DEFAULT ? ` vertical="${ alignment.alignment.vertical }"` : `` }${ alignment.alignment.wrapText ? ` wrapText="1"` : `` } />` : `` }
+      </xf>
+      `
+     }).join('\n') }
   </cellXfs>
   <cellStyles count="1">
     <cellStyle name="Обычный" xfId="0" builtinId="0" />
