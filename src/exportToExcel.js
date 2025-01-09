@@ -10,6 +10,11 @@ const stylesAreEquals = (a, b) => (
     && a.fillId === b.fillId
 )
 
+const xmlEscape = value => value.toString()
+  .replace(/\&/g, '&amp;')
+  .replace(/\</g, '&lt;')
+  .replace(/\>/g, '&gt;')
+
 export default async function exportToExcel(streamer) { // returns Blob
 
     let count = 0
@@ -102,7 +107,7 @@ export default async function exportToExcel(streamer) { // returns Blob
     
     strings = '<?xml version="1.0" encoding="utf-8" standalone="yes"?>'
     + `<sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="${ count }" uniqueCount="${ strings.length }">\n`
-    + strings.map(value => `<si><t>${ value }</t></si>`).join('\n')
+    + strings.map(value => `<si><t>${ xmlEscape(value) }</t></si>`).join('\n')
     + '\n</sst>'
 
     const root = new JSZip()

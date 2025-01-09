@@ -19,7 +19,7 @@ xlexport
 --------------------
 
 ```js
-import * as xlexport from 'path/to/dist/xlexport.esm.min.js'
+import * as xlexport from 'path/to/dist/xlexport.min.js'
 
 const tableElement = document.querySelector('table')
 const buttonElement = document.querySelector('button.export')

@@ -1,20 +1,17 @@
 {
     "name": "xlexport",
-    "version": "1.4.0",
+    "version": "1.4.1",
     "author": "h41ku <h41ku.c0de@ya.ru>",
     "license": "MIT",
     "type": "module",
     "main": "src/xlexport.js",
     "scripts": {
-        "build-esm": "webpack --config webpack.config.esm.bundle.js",
-        "build-umd": "webpack --config webpack.config.umd.bundle.js",
-        "build": "npm run build-esm && npm run build-umd"
-    },
-    "devDependencies": {
-        "webpack": "^5.75.0",
-        "webpack-cli": "^5.0.1"
+        "build": "esbuild src/xlexport.js --outfile=dist/xlexport.min.js --bundle --minify --sourcemap --charset=utf8 --format=esm"
     },
     "dependencies": {
         "jszip": "^3.10.1"
+    },
+    "devDependencies": {
+        "esbuild": "^0.24.2"
     }
 }
