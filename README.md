@@ -19,17 +19,17 @@ xlexp
 --------------------
 
 ```js
-import * as xlexport from 'path/to/dist/xlexport.min.js'
+import { exportToExcel, downloadAs, createStreamerFromTableElement } from 'xlexp'
 
 const tableElement = document.querySelector('table')
 const buttonElement = document.querySelector('button.export')
 
 buttonElement.addEventListener('click', async () => {
     buttonElement.setAttribute('disabled', true)
-    const blob = await xlexport.exportToExcel(
-        xlexport.createStreamerFromTableElement(tableElement)
+    const blob = await exportToExcel(
+        createStreamerFromTableElement(tableElement)
     )
-    xlexport.downloadAs(blob, "Пример выгрузки.xlsx")
+    downloadAs(blob, "Пример выгрузки.xlsx")
     buttonElement.removeAttribute('disabled')
 })
 ```
