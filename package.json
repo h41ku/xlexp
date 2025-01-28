@@ -6,7 +6,7 @@
     "type": "module",
     "main": "src/index.js",
     "scripts": {
-        "build": "esbuild src/index.js --outfile=dist/index.min.js --bundle --minify --sourcemap --charset=utf8 --format=esm"
+        "build": "esbuild src/index.js --outfile=dist/xlexp.min.js --bundle --minify --sourcemap --charset=utf8 --format=esm"
     },
     "dependencies": {
         "jszip": "^3.10.1"
