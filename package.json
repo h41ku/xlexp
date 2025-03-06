@@ -1,10 +1,11 @@
 {
     "name": "xlexp",
-    "version": "1.4.2",
+    "version": "1.4.3",
     "author": "h41ku <h41ku.c0de@ya.ru>",
     "license": "MIT",
     "type": "module",
     "main": "src/index.js",
+    "types": "types/index.d.ts",
     "scripts": {
         "build": "esbuild src/index.js --outfile=dist/xlexp.min.js --bundle --minify --sourcemap --charset=utf8 --format=esm"
     },
@@ -12,6 +13,6 @@
         "jszip": "^3.10.1"
     },
     "devDependencies": {
-        "esbuild": "^0.24.2"
+        "esbuild": "^0.25.0"
     }
 }
