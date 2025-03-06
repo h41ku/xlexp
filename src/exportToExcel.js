@@ -17,6 +17,8 @@ const xmlEscape = value => value.toString()
 
 export default async function exportToExcel(streamer) { // returns Blob
 
+    const author = '' // TODO
+
     let count = 0
     let rowNo = 1
     let result = ''
@@ -24,7 +26,7 @@ export default async function exportToExcel(streamer) { // returns Blob
         cols: 0,
         rows: 0
     }
-    const columnsExtrems = []
+    const columnsExtremes = []
 
     const fonts = []
     const alignments = []
@@ -55,7 +57,7 @@ export default async function exportToExcel(streamer) { // returns Blob
         ? await streamer.frozenPosition()
         : { x: 0, y: 0 }
 
-    await streamer.streamAll((values, styles, doComputeExtrems = true) => {
+    await streamer.streamAll((values, styles, doComputeExtremes = true) => {
         const row = []
         let colNo = 0
         let maxFontSize = null
@@ -71,20 +73,20 @@ export default async function exportToExcel(streamer) { // returns Blob
             if (dimensions.cols < colNo) {
                 dimensions.cols = colNo
             }
-            if (doComputeExtrems) {
-                if (columnsExtrems[colNo] === undefined) {
-                    columnsExtrems[colNo] = {
+            if (doComputeExtremes) {
+                if (columnsExtremes[colNo] === undefined) {
+                    columnsExtremes[colNo] = {
                         value,
                         isStyled: cellStyle.font.bold,
                         maxFontSize: cellStyle.font.size
                     }
                 } else {
-                    if (columnsExtrems[colNo].value.length < value.length) {
-                        columnsExtrems[colNo].value = value
-                        columnsExtrems[colNo].isStyled = cellStyle.font.bold
+                    if (columnsExtremes[colNo].value.length < value.length) {
+                        columnsExtremes[colNo].value = value
+                        columnsExtremes[colNo].isStyled = cellStyle.font.bold
                     }
-                    if (columnsExtrems[colNo].maxFontSize < cellStyle.font.size) {
-                        columnsExtrems[colNo].maxFontSize = cellStyle.font.size
+                    if (columnsExtremes[colNo].maxFontSize < cellStyle.font.size) {
+                        columnsExtremes[colNo].maxFontSize = cellStyle.font.size
                     }
                 }
             }
@@ -101,7 +103,7 @@ export default async function exportToExcel(streamer) { // returns Blob
         dimensions.rows ++
     })
 
-    columnsExtrems.forEach(col => {
+    columnsExtremes.forEach(col => {
         col.width = (col.value.length + 2) * (col.isStyled ? 1.1 : 1) * (col.maxFontSize / CellStyle.FONT_SIZE_DEFAULT)
     })
     
@@ -167,8 +169,8 @@ export default async function exportToExcel(streamer) { // returns Blob
 
     docProps.file('core.xml', `<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dcmitype="http://purl.org/dc/dcmitype/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <dc:creator>azbitnev</dc:creator>
-  <cp:lastModifiedBy>azbitnev</cp:lastModifiedBy>
+  <dc:creator>${author}</dc:creator>
+  <cp:lastModifiedBy>${author}</cp:lastModifiedBy>
   <dcterms:created xsi:type="dcterms:W3CDTF">2022-06-21T05:48:54Z</dcterms:created>
   <dcterms:modified xsi:type="dcterms:W3CDTF">2022-06-21T05:48:54Z</dcterms:modified>
 </cp:coreProperties>`)
@@ -598,7 +600,7 @@ export default async function exportToExcel(streamer) { // returns Blob
   </sheetViews>
   <sheetFormatPr defaultRowHeight="15" />
   <cols>
-    ${ columnsExtrems.map((col, i) => `<col min="${ i + 1 }" max="${ i + 1 }" width="${ col.width }" customWidth="1" />`).join('\n') }
+    ${ columnsExtremes.map((col, i) => `<col min="${ i + 1 }" max="${ i + 1 }" width="${ col.width }" customWidth="1" />`).join('\n') }
   </cols>
   <sheetData>
     ${ result }
