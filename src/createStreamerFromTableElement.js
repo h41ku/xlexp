@@ -4,7 +4,7 @@ export default function createStreamerFromTableElement(tableElement, skipEmptyRo
 
     const Q = selector => tableElement.querySelectorAll(selector)
 
-    const streamRows = (elements, cellsSelector, callback, skipEmptyRows, doComputeExtrems = true) => elements.forEach(rowElement => {
+    const streamRows = (elements, cellsSelector, callback, skipEmptyRows, doComputeExtremes = true) => elements.forEach(rowElement => {
         const values = []
         const styles = []
         rowElement.querySelectorAll(cellsSelector).forEach(cellElement => {
@@ -43,7 +43,7 @@ export default function createStreamerFromTableElement(tableElement, skipEmptyRo
             values.push(cellElement.innerText) // type of value must be a string
         })
         if (!skipEmptyRows || values.length > 0) {
-            callback(values, styles, doComputeExtrems)
+            callback(values, styles, doComputeExtremes)
         }
     })
 
