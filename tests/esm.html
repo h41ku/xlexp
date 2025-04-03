@@ -101,17 +101,18 @@ button.export {
 
 <script type="module">
 
-import * as xlexport from '../dist/xlexport.esm.min.js'
+import { exportToExcel, createSourceFromTableElement } from '../dist/xlexp.min.js'
+import passIt from 'https://unpkg.com/pass-it/src/index.js'
 
 const tableElement = document.querySelector('table')
 const buttonElement = document.querySelector('button.export')
 
 buttonElement.addEventListener('click', async () => {
     buttonElement.setAttribute('disabled', true)
-    const blob = await xlexport.exportToExcel(
-        xlexport.createStreamerFromTableElement(tableElement)
+    const blob = await exportToExcel(
+        createSourceFromTableElement(tableElement)
     )
-    xlexport.downloadAs(blob, "Пример выгрузки.xlsx")
+    passIt(blob, { download: "Пример выгрузки.xlsx" })
     buttonElement.removeAttribute('disabled')
 })
 
