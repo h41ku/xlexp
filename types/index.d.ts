@@ -28,7 +28,11 @@ export type Position = {
     y: number
 };
 
-export type Row = (values: Array<string>, styles: Array<CellStyle>, doComputeExtremes?: boolean) => void;
+export type Row = {
+    values: Array<string>,
+    styles: Array<CellStyle>,
+    doComputeExtremes?: boolean
+};
 
 export interface WorksheetSource {
     getAuthor(): Promise<string>;
