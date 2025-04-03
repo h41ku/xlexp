@@ -7,12 +7,12 @@ export type FillPattern = string;
 export interface CellStyle {
     setFont(name: string, size: number, color: Color | null, bold: boolean, italic: boolean, underline: boolean, strikethrough: boolean): void;
     setAlignment(horizontal: HorizontalAlignment, vertical: VerticalAlignment, wrapText: boolean): void;
-    setBorderLeft(thickness: BorderThickness | null, color: Color | undefined): void;
-    setBorderRight(thickness: BorderThickness | null, color: Color | undefined): void;
-    setBorderTop(thickness: BorderThickness | null, color: Color | undefined): void;
-    setBorderBottom(thickness: BorderThickness | null, color: Color | undefined): void;
-    setBorderDiagonal(thickness: BorderThickness | null, color: Color | undefined): void;
-    setFill(pattern: FillPattern | undefined, bgColor: Color | undefined): void;
+    setBorderLeft(thickness: BorderThickness | null, color?: Color): void;
+    setBorderRight(thickness: BorderThickness | null, color?: Color): void;
+    setBorderTop(thickness: BorderThickness | null, color?: Color): void;
+    setBorderBottom(thickness: BorderThickness | null, color?: Color): void;
+    setBorderDiagonal(thickness: BorderThickness | null, color?: Color): void;
+    setFill(pattern?: FillPattern, bgColor?: Color): void;
     fontsAreEquals(cellStyle: CellStyle): boolean;
     alignmentsAreEquals(cellStyle: CellStyle): boolean;
     bordersAreEquals(cellStyle: CellStyle): boolean;
@@ -28,14 +28,19 @@ export type Position = {
     y: number
 };
 
-export type callbackFn = (values: Array<string>, styles: Array<CellStyle>, doComputeExtremes: boolean | undefined) => void;
+export type Row = (values: Array<string>, styles: Array<CellStyle>, doComputeExtremes?: boolean) => void;
 
-export interface Streamer {
-    frozenPosition(): Promise<Position>;
-    streamAll(callback: callbackFn): Promise<void>;
+export interface WorksheetSource {
+    getAuthor(): Promise<string>;
+    getFrozenPosition(): Promise<Position>;
+    getReadableStream(): Promise<ReadableStream<Row>>;
+};
+
+export type TableToSourceOptions = {
+    author?: string,
+    skipEmptyRows?: boolean
 };
 
 export declare function getColumnNameByIndex(n: number): string;
-export declare function createStreamerFromTableElement(tableElement: Element, skipEmptyRows: boolean | undefined): Streamer;
-export declare function downloadAs(sourceAsBlob: Blob, fileName: string): void;
-export declare function exportToExcel(streamer: Streamer): Promise<Blob>;
+export declare function createSourceFromTableElement(tableElement: Element, options?: TableToSourceOptions): Streamer;
+export declare function exportToExcel(source: WorksheetSource): Promise<Blob>;

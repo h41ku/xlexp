@@ -1,6 +1,8 @@
 import CellStyle from './CellStyle.js'
 
-export default function createStreamerFromTableElement(tableElement, skipEmptyRows = true) {
+export default function createSourceFromTableElement(tableElement, options = {}) {
+
+    const { skipEmptyRows = true, author = '' } = options
 
     const Q = selector => tableElement.querySelectorAll(selector)
 
@@ -49,16 +51,40 @@ export default function createStreamerFromTableElement(tableElement, skipEmptyRo
 
     return {
 
-        async frozenPosition() {
+        async getAuthor() {
+            return author
+        },
+
+        async getFrozenPosition() {
             const rows = [ ...Q('caption'), ...Q('thead > tr') ]
             return { x: 0, y: rows.length }
         },
 
-        async streamAll(callback) {
-            streamRows([ tableElement ], 'caption', callback, true, false)
-            streamRows(Q('thead > tr'), 'th', callback, skipEmptyRows)
-            streamRows(Q('tbody > tr'), 'td', callback, skipEmptyRows)
-            streamRows(Q('tfoot > tr'), 'td', callback, skipEmptyRows)
+        async getReadableStream() {
+            let canceled = false
+            return new ReadableStream({
+                start(controller) {
+                    const callback = (values, styles, doComputeExtremes) => {
+                        if (!canceled) {
+                            controller.enqueue({
+                                values,
+                                styles,
+                                doComputeExtremes
+                            })
+                        }
+                    }
+                    streamRows([ tableElement ], 'caption', callback, true, false)
+                    streamRows(Q('thead > tr'), 'th', callback, skipEmptyRows)
+                    streamRows(Q('tbody > tr'), 'td', callback, skipEmptyRows)
+                    streamRows(Q('tfoot > tr'), 'td', callback, skipEmptyRows)
+                    controller.close()
+                },
+                pull(controller) { },
+                cancel() {
+                    console.log('reading canceled...')
+                    canceled = true
+                }
+            })
         }
     }
 }

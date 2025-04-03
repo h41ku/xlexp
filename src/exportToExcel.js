@@ -15,9 +15,9 @@ const xmlEscape = value => value.toString()
   .replace(/\</g, '&lt;')
   .replace(/\>/g, '&gt;')
 
-export default async function exportToExcel(streamer) { // returns Blob
+export default async function exportToExcel(source) { // returns Blob
 
-    const author = '' // TODO
+    const author = await source.getAuthor()
 
     let count = 0
     let rowNo = 1
@@ -53,11 +53,10 @@ export default async function exportToExcel(streamer) { // returns Blob
     const getStyleId = getId(styles, stylesAreEquals)
     const getStringId = getId(strings, (a, b) => a === b)
 
-    const frozenPosition = streamer.frozenPosition
-        ? await streamer.frozenPosition()
-        : { x: 0, y: 0 }
+    const frozenPosition = await source.getFrozenPosition()
+    const stream = await source.getReadableStream()
 
-    await streamer.streamAll((values, styles, doComputeExtremes = true) => {
+    for await (const { values, styles, doComputeExtremes = true } of stream) {
         const row = []
         let colNo = 0
         let maxFontSize = null
@@ -101,7 +100,7 @@ export default async function exportToExcel(streamer) { // returns Blob
         }
         rowNo ++
         dimensions.rows ++
-    })
+    }
 
     columnsExtremes.forEach(col => {
         col.width = (col.value.length + 2) * (col.isStyled ? 1.1 : 1) * (col.maxFontSize / CellStyle.FONT_SIZE_DEFAULT)
@@ -608,7 +607,5 @@ export default async function exportToExcel(streamer) { // returns Blob
   <pageMargins left="0.7" right="0.7" top="0.75" bottom="0.75" header="0.3" footer="0.3" />
 </worksheet>`)
 
-    const blob = await root.generateAsync({ type: 'blob' })
-
-    return blob
+    return await root.generateAsync({ type: 'blob' })
 }

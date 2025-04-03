@@ -1,7 +1,6 @@
 import CellStyle from './CellStyle.js'
-import createStreamerFromTableElement from './createStreamerFromTableElement.js'
+import createSourceFromTableElement from './createSourceFromTableElement.js'
 import getColumnNameByIndex from './getColumnNameByIndex.js'
-import downloadAs from './downloadAs.js'
 import exportToExcel from './exportToExcel.js'
 
 export {
@@ -9,8 +8,6 @@ export {
     CellStyle,
 
     getColumnNameByIndex,
-    createStreamerFromTableElement,
-    downloadAs,
-
+    createSourceFromTableElement,
     exportToExcel
 }
