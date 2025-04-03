@@ -81,7 +81,6 @@ export default function createSourceFromTableElement(tableElement, options = {})
                 },
                 pull(controller) { },
                 cancel() {
-                    console.log('reading canceled...')
                     canceled = true
                 }
             })
