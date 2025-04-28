@@ -2,12 +2,13 @@ import JSZip from 'jszip'
 import CellStyle from './CellStyle.js'
 import getColumnNameByIndex from './getColumnNameByIndex.js'
 
-const buildStyle = (fontId, alignmentId, borderId, fillId) => ({ fontId, alignmentId, borderId, fillId })
+const buildStyle = (fontId, alignmentId, borderId, fillId, numFormatId) => ({ fontId, alignmentId, borderId, fillId, numFormatId })
 const stylesAreEquals = (a, b) => (
     a.fontId === b.fontId
     && a.alignmentId === b.alignmentId
     && a.borderId === b.borderId
     && a.fillId === b.fillId
+    && a.numFormatId === b.numFormatId
 )
 
 const xmlEscape = value => value.toString()
@@ -33,6 +34,7 @@ export default async function exportToExcel(source) { // returns Blob
     const borders = []
     const fills = []
     const styles = []
+    const numFormats = []
     let strings = []
 
     const getId = (haystack, comparator) => target => {
@@ -50,13 +52,14 @@ export default async function exportToExcel(source) { // returns Blob
     const getAlignmentId = getId(alignments, 'alignmentsAreEquals')
     const getBorderId = getId(borders, 'bordersAreEquals')
     const getFillId = getId(fills, 'fillsAreEquals')
+    const getNumFormatId = getId(numFormats, (a, b) => a.formatCode === b.formatCode)
     const getStyleId = getId(styles, stylesAreEquals)
     const getStringId = getId(strings, (a, b) => a === b)
 
     const frozenPosition = await source.getFrozenPosition()
     const stream = await source.getReadableStream()
 
-    for await (const { values, styles, doComputeExtremes = true } of stream) {
+    for await (const { values, styles, types = null, doComputeExtremes = true } of stream) {
         const row = []
         let colNo = 0
         let maxFontSize = null
@@ -66,9 +69,14 @@ export default async function exportToExcel(source) { // returns Blob
             const alignmentId = getAlignmentId(cellStyle)
             const borderId = getBorderId(cellStyle)
             const fillId = getFillId(cellStyle)
-            const styleId = getStyleId(buildStyle(fontId, alignmentId, borderId, fillId))
-            const stringId = getStringId(value)
-            row.push(`<c r="${ getColumnNameByIndex(colNo) + rowNo }" s="${ styleId }" t="s"><v>${ stringId }</v></c>`)
+            const numFormatId = getNumFormatId(cellStyle)
+            const styleId = getStyleId(buildStyle(fontId, alignmentId, borderId, fillId, numFormatId))
+            if (cellStyle.type === CellStyle.TYPE_STRING) {
+              const stringId = getStringId(value)
+              row.push(`<c r="${ getColumnNameByIndex(colNo) + rowNo }" s="${ styleId }" t="s"><v>${ stringId }</v></c>`)
+            } else {
+              row.push(`<c r="${ getColumnNameByIndex(colNo) + rowNo }" s="${ styleId }" t="n"><v>${ value }</v></c>`)
+            }
             if (dimensions.cols < colNo) {
                 dimensions.cols = colNo
             }
@@ -516,6 +524,11 @@ export default async function exportToExcel(source) { // returns Blob
 
     xl.file('styles.xml', `<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+  <numFmts count="${ numFormats.length }">
+    ${ numFormats.map((item, i) => `
+      <numFmt numFmtId="${ i }" formatCode="${ item.formatCode }"/>
+    `).join('\n') }
+  </numFmts>
   <fonts count="${ fonts.length }">
     ${ fonts.map(item => `
       <font>
@@ -573,7 +586,7 @@ export default async function exportToExcel(source) { // returns Blob
       const border = borders[item.borderId]
       const fill = fills[item.fillId]
       return `
-      <xf numFmtId="0" fontId="${ item.fontId }" fillId="${ item.fillId }" borderId="${ item.borderId }" xfId="0" applyNumberFormat="1" applyFont="1"${ alignment.hasAlignments() ? ` applyAlignment="1"` : `` }${ border.hasBorders() ? ` applyBorder="1"` : `` }${ fill.hasFills() ? ` applyFill="1"` : `` }>
+      <xf numFmtId="${ item.numFormatId }" fontId="${ item.fontId }" fillId="${ item.fillId }" borderId="${ item.borderId }" xfId="0" applyNumberFormat="1" applyFont="1"${ alignment.hasAlignments() ? ` applyAlignment="1"` : `` }${ border.hasBorders() ? ` applyBorder="1"` : `` }${ fill.hasFills() ? ` applyFill="1"` : `` }>
         ${ alignment.hasAlignments() ? `<alignment${ alignment.alignment.horizontal !== CellStyle.HORIZONTAL_ALIGNMENT_DEFAULT ? ` horizontal="${ alignment.alignment.horizontal }"` : `` }${ alignment.alignment.vertical !== CellStyle.VERTICAL_ALIGNMENT_DEFAULT ? ` vertical="${ alignment.alignment.vertical }"` : `` }${ alignment.alignment.wrapText ? ` wrapText="1"` : `` } />` : `` }
       </xf>
       `

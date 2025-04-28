@@ -18,6 +18,11 @@ const BORDER_THICKNESS_THIN = 'thin'
 const FILL_PATTERN_NONE = 'none'
 const FILL_PATTERN_SOLID = 'solid'
 
+const TYPE_STRING = 's'
+const TYPE_NUMERIC = 'n'
+
+const FORMAT_CODE_GENERAL = 'General'
+
 const COLOR_DEFAULT = null
 
 const fontsAreEquals = (a, b) => (
@@ -57,6 +62,7 @@ class CellStyle {
         this.setBorderBottom()
         this.setBorderDiagonal()
         this.setFill()
+        this.setType()
     }
 
     setFont(name = FONT_NAME_DEFAULT, size = FONT_SIZE_DEFAULT, color = COLOR_DEFAULT, bold = false, italic = false, underline = false, strikethrough = false) {
@@ -89,6 +95,11 @@ class CellStyle {
 
     setFill(pattern = FILL_PATTERN_NONE, bgColor = COLOR_DEFAULT) {
         this.fill = { pattern, bgColor }
+    }
+
+    setType(type = TYPE_STRING, formatCode = FORMAT_CODE_GENERAL) {
+        this.type = type
+        this.formatCode = formatCode
     }
 
     fontsAreEquals(cellStyle) {
@@ -148,6 +159,7 @@ class CellStyle {
         result.setBorderBottom(borderBottom.thickness, borderBottom.color)
         result.setBorderDiagonal(borderDiagonal.thickness, borderDiagonal.color)
         result.setFill(fill.pattern, fill.bgColor)
+        result.setType(this.type, this.formatCode)
         return result
     }
 }
@@ -172,5 +184,10 @@ CellStyle.FILL_PATTERN_NONE = FILL_PATTERN_NONE
 CellStyle.FILL_PATTERN_SOLID = FILL_PATTERN_SOLID
 
 CellStyle.COLOR_DEFAULT = COLOR_DEFAULT
+
+CellStyle.TYPE_STRING = TYPE_STRING
+CellStyle.TYPE_NUMERIC = TYPE_NUMERIC
+
+CellStyle.FORMAT_CODE_GENERAL = FORMAT_CODE_GENERAL
 
 export default CellStyle

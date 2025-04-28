@@ -10,6 +10,7 @@
 - Возможность указать автора
 - Установка размера и стиля шрифта
 - Установка стилей границ ячеек
+- Установка формата значений ячеек
 - Установка цвета текста и фона ячеек
 - Использование `Streams API` для работы с асинхронными потоками данных
 - Использование HTML-таблиц в качестве потоков данных
@@ -32,24 +33,24 @@
         <tr>
             <td>78123</td>
             <td>Урюпинск</td>
-            <td data-xl-halign="right">23709</td>
+            <td data-xl-halign="right" data-xl-type="num">23709</td>
         </tr>
         <tr>
             <td>34224</td>
             <td>Тюмень</td>
-            <td data-xl-halign="right">992311</td>
+            <td data-xl-halign="right" data-xl-type="num">992311</td>
         </tr>
         <tr>
             <td>22333</td>
             <td>Ульяновск</td>
-            <td data-xl-halign="right">2349833</td>
+            <td data-xl-halign="right" data-xl-type="num">2349833</td>
         </tr>
     </tbody>
     <tfoot>
         <tr>
             <td></td>
             <td>Среднее</td>
-            <td data-xl-halign="right">1121951</td>
+            <td data-xl-halign="right" data-xl-type="num" data-xl-fmt="#,##0.000">1121951</td>
         </tr>
     </tfoot>
 </table>

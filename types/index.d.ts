@@ -13,6 +13,7 @@ export interface CellStyle {
     setBorderBottom(thickness: BorderThickness | null, color?: Color): void;
     setBorderDiagonal(thickness: BorderThickness | null, color?: Color): void;
     setFill(pattern?: FillPattern, bgColor?: Color): void;
+    setType(type?: string, formatCode?: string): void;
     fontsAreEquals(cellStyle: CellStyle): boolean;
     alignmentsAreEquals(cellStyle: CellStyle): boolean;
     bordersAreEquals(cellStyle: CellStyle): boolean;
