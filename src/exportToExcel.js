@@ -16,6 +16,17 @@ const xmlEscape = value => value.toString()
   .replace(/\</g, '&lt;')
   .replace(/\>/g, '&gt;')
 
+const length = (value, style) => {
+  if (style.type === CellStyle.TYPE_STRING)
+    return value.length
+  const m = style.formatCode.match(/\.(0+)$/)
+  const scale = m ? m[1].length + 1 : 0
+  return value.length
+    + 1
+    + Math.round(value.replace(/\.\d+$/, '').replace(/\D/g, '').length / 3)
+    + scale
+}
+
 export default async function exportToExcel(source) { // returns Blob
 
     const author = await source.getAuthor()
@@ -59,11 +70,12 @@ export default async function exportToExcel(source) { // returns Blob
     const frozenPosition = await source.getFrozenPosition()
     const stream = await source.getReadableStream()
 
-    for await (const { values, styles, types = null, doComputeExtremes = true } of stream) {
+    for await (const { values, styles, doComputeExtremes = true } of stream) {
         const row = []
         let colNo = 0
         let maxFontSize = null
         values.forEach((value, i) => {
+            value = typeof value === 'string' ? value : (value === null || value === undefined ? '' : value.toString())
             const cellStyle = styles[i]
             const fontId = getFontId(cellStyle)
             const alignmentId = getAlignmentId(cellStyle)
@@ -83,13 +95,14 @@ export default async function exportToExcel(source) { // returns Blob
             if (doComputeExtremes) {
                 if (columnsExtremes[colNo] === undefined) {
                     columnsExtremes[colNo] = {
-                        value,
+                        length: length(value, cellStyle),
                         isStyled: cellStyle.font.bold,
                         maxFontSize: cellStyle.font.size
                     }
                 } else {
-                    if (columnsExtremes[colNo].value.length < value.length) {
-                        columnsExtremes[colNo].value = value
+                    const len = length(value, cellStyle)
+                    if (columnsExtremes[colNo].length < len) {
+                        columnsExtremes[colNo].length = len
                         columnsExtremes[colNo].isStyled = cellStyle.font.bold
                     }
                     if (columnsExtremes[colNo].maxFontSize < cellStyle.font.size) {
@@ -111,8 +124,11 @@ export default async function exportToExcel(source) { // returns Blob
     }
 
     columnsExtremes.forEach(col => {
-        col.width = (col.value.length + 2) * (col.isStyled ? 1.1 : 1) * (col.maxFontSize / CellStyle.FONT_SIZE_DEFAULT)
+        col.width = (col.length + 2)
+          * (col.isStyled ? 1.1 : 1)
+          * (col.maxFontSize / CellStyle.FONT_SIZE_DEFAULT)
     })
+    console.log(columnsExtremes)
     
     strings = '<?xml version="1.0" encoding="utf-8" standalone="yes"?>'
     + `<sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="${ count }" uniqueCount="${ strings.length }">\n`
