@@ -128,7 +128,6 @@ export default async function exportToExcel(source) { // returns Blob
           * (col.isStyled ? 1.1 : 1)
           * (col.maxFontSize / CellStyle.FONT_SIZE_DEFAULT)
     })
-    console.log(columnsExtremes)
     
     strings = '<?xml version="1.0" encoding="utf-8" standalone="yes"?>'
     + `<sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="${ count }" uniqueCount="${ strings.length }">\n`
