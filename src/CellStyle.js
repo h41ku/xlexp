@@ -44,6 +44,14 @@ const alignmentsAreEquals = (a, b) => (
 const bordersAreEquals = (a, b) => (
     a.thickness === b.thickness
         && a.color === b.color
+        && ('up' in a ? a.up === b.up : true)
+        && ('down' in a ? a.down === b.down : true)
+)
+
+const diagonalBordersAreEquals = (a, b) => (
+    bordersAreEquals(a, b)
+        && a.up === b.up
+        && a.down === b.down
 )
 
 const fillsAreEquals = (a, b) => (
@@ -89,8 +97,8 @@ class CellStyle {
         this.borderBottom = { thickness, color }
     }
 
-    setBorderDiagonal(thickness = BORDER_THICKNESS_NONE, color = 64) {
-        this.borderDiagonal = { thickness, color }
+    setBorderDiagonal(thickness = BORDER_THICKNESS_NONE, color = 64, up = true, down = true) {
+        this.borderDiagonal = { thickness, color, up, down }
     }
 
     setFill(pattern = FILL_PATTERN_NONE, bgColor = COLOR_DEFAULT) {
@@ -115,7 +123,7 @@ class CellStyle {
             && bordersAreEquals(this.borderRight, cellStyle.borderRight)
             && bordersAreEquals(this.borderTop, cellStyle.borderTop)
             && bordersAreEquals(this.borderBottom, cellStyle.borderBottom)
-            && bordersAreEquals(this.borderDiagonal, cellStyle.borderDiagonal)
+            && diagonalBordersAreEquals(this.borderDiagonal, cellStyle.borderDiagonal)
     }
 
     fillsAreEquals(cellStyle) {
@@ -143,21 +151,14 @@ class CellStyle {
 
     clone() {
         const result = new CellStyle()
-        const font = this.font
-        const alignment = this.alignment
-        const borderLeft = this.borderLeft
-        const borderRight = this.borderRight
-        const borderTop = this.borderTop
-        const borderBottom = this.borderBottom
-        const borderDiagonal = this.borderDiagonal
-        const fill = this.fill
+        const { font, alignment, borderLeft, borderRight, borderTop, borderBottom, borderDiagonal, fill } = this
         result.setFont(font.name, font.size, font.color, font.bold, font.italic, font.underline, font.strikethrough)
         result.setAlignment(alignment.horizontal, alignment.vertical, alignment.wrapText)
         result.setBorderLeft(borderLeft.thickness, borderLeft.color)
         result.setBorderRight(borderRight.thickness, borderRight.color)
         result.setBorderTop(borderTop.thickness, borderTop.color)
         result.setBorderBottom(borderBottom.thickness, borderBottom.color)
-        result.setBorderDiagonal(borderDiagonal.thickness, borderDiagonal.color)
+        result.setBorderDiagonal(borderDiagonal.thickness, borderDiagonal.color, borderDiagonal.up, borderDiagonal.down)
         result.setFill(fill.pattern, fill.bgColor)
         result.setType(this.type, this.formatCode)
         return result

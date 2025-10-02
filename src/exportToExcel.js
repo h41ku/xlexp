@@ -74,6 +74,7 @@ export default async function exportToExcel(source) { // returns Blob
         const row = []
         let colNo = 0
         let maxFontSize = null
+console.log('-------')
         values.forEach((value, i) => {
             value = typeof value === 'string' ? value : (value === null || value === undefined ? '' : value.toString())
             const cellStyle = styles[i]
@@ -83,6 +84,7 @@ export default async function exportToExcel(source) { // returns Blob
             const fillId = getFillId(cellStyle)
             const numFormatId = getNumFormatId(cellStyle)
             const styleId = getStyleId(buildStyle(fontId, alignmentId, borderId, fillId, numFormatId))
+console.log({ value, styleId, borderId })
             if (cellStyle.type === CellStyle.TYPE_STRING) {
               const stringId = getStringId(value)
               row.push(`<c r="${ getColumnNameByIndex(colNo) + rowNo }" s="${ styleId }" t="s"><v>${ stringId }</v></c>`)
@@ -572,7 +574,10 @@ export default async function exportToExcel(source) { // returns Blob
   </fills>
   <borders count="${ borders.length }">
     ${ borders.map(item => `
-       <border>
+       <border${ item.borderDiagonal.thickness !== CellStyle.BORDER_THICKNESS_NONE
+          ? ` diagonalUp="${ item.borderDiagonal.up ? `true` : `false` }" diagonalDown="${ item.borderDiagonal.down ? `true` : `false` }"`
+          : ``
+        }>
           <left${ item.borderLeft.thickness !== CellStyle.BORDER_THICKNESS_NONE ? ` style="${ item.borderLeft.thickness }"` : `` }>
              ${ item.borderLeft.thickness !== CellStyle.BORDER_THICKNESS_NONE ? `<color indexed="${ item.borderLeft.color }"/>` : `` }
           </left>
