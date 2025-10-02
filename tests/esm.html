@@ -27,8 +27,12 @@ body {
     flex-direction: column;
 }
 
+table {
+    --border-color: rgba(0,0,0,0.1);
+}
+
 table, table th, table td {
-    border: 1px solid rgba(0,0,0,0.1);
+    border: 1px solid var(--border-color);
     border-collapse: collapse;
 }
 
@@ -51,6 +55,16 @@ table caption {
     font-weight: bold;
 }
 
+[data-xl-border-diagonal=thin] {
+    background-image: repeating-linear-gradient(
+        -45deg,
+        var(--border-color),
+        var(--border-color) 2px,
+        transparent 2px,
+        transparent 8px
+    );
+}
+
 button.export {
     margin: 1rem;
     cursor: pointer;
@@ -61,12 +75,13 @@ button.export {
 <div class="container">
 
 <table class="sample">
-<caption>Население некоторых городов</caption>
+<caption>Какие-то интересные данные для примера:</caption>
 <thead>
 <tr>
     <th data-xl-bold="on" data-xl-border="thin">Идентификатор</th>
     <th data-xl-bold="on" data-xl-border="thin">Город</th>
     <th data-xl-bold="on" data-xl-border="thin" data-xl-halign="right">Население</th>
+    <th data-xl-bold="on" data-xl-border="thin" data-xl-halign="right">Поставки</th>
 </tr>
 </thead>
 <tbody>
@@ -74,16 +89,19 @@ button.export {
     <td>78123</td>
     <td>Урюпинск</td>
     <td data-xl-halign="right" data-xl-type="num">23709</td>
+    <td data-xl-halign="right" data-xl-type="num" data-xl-border-diagonal="thin"></td>
 </tr>
 <tr>
     <td>34224</td>
     <td>Тюмень</td>
     <td data-xl-halign="right" data-xl-type="num">992311</td>
+    <td data-xl-halign="right" data-xl-type="num">573</td>
 </tr>
 <tr>
     <td>22333</td>
     <td>Ульяновск</td>
     <td data-xl-halign="right" data-xl-type="num">2349833</td>
+    <td data-xl-halign="right" data-xl-type="num">1823</td>
 </tr>
 </tbody>
 <tfoot>
@@ -95,7 +113,7 @@ button.export {
 </tfoot>
 </table>
 
-<button class="export">Export</button>
+<button class="export">Экспорт таблицы</button>
     
 </div>
 
