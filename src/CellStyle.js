@@ -81,23 +81,23 @@ class CellStyle {
         this.alignment = { horizontal, vertical, wrapText }
     }
 
-    setBorderLeft(thickness = BORDER_THICKNESS_NONE, color = 64) {
+    setBorderLeft(thickness = BORDER_THICKNESS_NONE, color = COLOR_DEFAULT) {
         this.borderLeft = { thickness, color }
     }
 
-    setBorderRight(thickness = BORDER_THICKNESS_NONE, color = 64) {
+    setBorderRight(thickness = BORDER_THICKNESS_NONE, color = COLOR_DEFAULT) {
         this.borderRight = { thickness, color }
     }
 
-    setBorderTop(thickness = BORDER_THICKNESS_NONE, color = 64) {
+    setBorderTop(thickness = BORDER_THICKNESS_NONE, color = COLOR_DEFAULT) {
         this.borderTop = { thickness, color }
     }
 
-    setBorderBottom(thickness = BORDER_THICKNESS_NONE, color = 64) {
+    setBorderBottom(thickness = BORDER_THICKNESS_NONE, color = COLOR_DEFAULT) {
         this.borderBottom = { thickness, color }
     }
 
-    setBorderDiagonal(thickness = BORDER_THICKNESS_NONE, color = 64, up = true, down = true) {
+    setBorderDiagonal(thickness = BORDER_THICKNESS_NONE, color = COLOR_DEFAULT, up = true, down = true) {
         this.borderDiagonal = { thickness, color, up, down }
     }
 

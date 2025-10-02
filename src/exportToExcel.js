@@ -74,7 +74,6 @@ export default async function exportToExcel(source) { // returns Blob
         const row = []
         let colNo = 0
         let maxFontSize = null
-console.log('-------')
         values.forEach((value, i) => {
             value = typeof value === 'string' ? value : (value === null || value === undefined ? '' : value.toString())
             const cellStyle = styles[i]
@@ -84,7 +83,6 @@ console.log('-------')
             const fillId = getFillId(cellStyle)
             const numFormatId = getNumFormatId(cellStyle)
             const styleId = getStyleId(buildStyle(fontId, alignmentId, borderId, fillId, numFormatId))
-console.log({ value, styleId, borderId })
             if (cellStyle.type === CellStyle.TYPE_STRING) {
               const stringId = getStringId(value)
               row.push(`<c r="${ getColumnNameByIndex(colNo) + rowNo }" s="${ styleId }" t="s"><v>${ stringId }</v></c>`)
@@ -579,19 +577,19 @@ console.log({ value, styleId, borderId })
           : ``
         }>
           <left${ item.borderLeft.thickness !== CellStyle.BORDER_THICKNESS_NONE ? ` style="${ item.borderLeft.thickness }"` : `` }>
-             ${ item.borderLeft.thickness !== CellStyle.BORDER_THICKNESS_NONE ? `<color indexed="${ item.borderLeft.color }"/>` : `` }
+             ${ item.borderLeft.thickness !== CellStyle.BORDER_THICKNESS_NONE ? (item.borderLeft.color !== CellStyle.COLOR_DEFAULT ? `<color indexed="${ item.borderLeft.color }"/>` : ``) : `` }
           </left>
           <right${ item.borderRight.thickness !== CellStyle.BORDER_THICKNESS_NONE ? ` style="${ item.borderRight.thickness }"` : `` }>
-             ${ item.borderRight.thickness !== CellStyle.BORDER_THICKNESS_NONE ? `<color indexed="${ item.borderRight.color }"/>` : `` }
+             ${ item.borderRight.thickness !== CellStyle.BORDER_THICKNESS_NONE ? (item.borderRight.color !== CellStyle.COLOR_DEFAULT ? `<color indexed="${ item.borderRight.color }"/>` : ``) : `` }
           </right>
           <top${ item.borderTop.thickness !== CellStyle.BORDER_THICKNESS_NONE ? ` style="${ item.borderTop.thickness }"` : `` }>
-             ${ item.borderTop.thickness !== CellStyle.BORDER_THICKNESS_NONE ? `<color indexed="${ item.borderTop.color }"/>` : `` }
+             ${ item.borderTop.thickness !== CellStyle.BORDER_THICKNESS_NONE ? (item.borderTop.color !== CellStyle.COLOR_DEFAULT ? `<color indexed="${ item.borderTop.color }"/>` : ``) : `` }
           </top>
           <bottom${ item.borderBottom.thickness !== CellStyle.BORDER_THICKNESS_NONE ? ` style="${ item.borderBottom.thickness }"` : `` }>
-             ${ item.borderBottom.thickness !== CellStyle.BORDER_THICKNESS_NONE ? `<color indexed="${ item.borderBottom.color }"/>` : `` }
+             ${ item.borderBottom.thickness !== CellStyle.BORDER_THICKNESS_NONE ? (item.borderBottom.color !== CellStyle.COLOR_DEFAULT ? `<color indexed="${ item.borderBottom.color }"/>` : ``) : `` }
           </bottom>
           <diagonal${ item.borderDiagonal.thickness !== CellStyle.BORDER_THICKNESS_NONE ? ` style="${ item.borderDiagonal.thickness }"` : `` }>
-             ${ item.borderDiagonal.thickness !== CellStyle.BORDER_THICKNESS_NONE ? `<color indexed="${ item.borderDiagonal.color }"/>` : `` }
+             ${ item.borderDiagonal.thickness !== CellStyle.BORDER_THICKNESS_NONE ? (item.borderDiagonal.color !== CellStyle.COLOR_DEFAULT ? `<color indexed="${ item.borderDiagonal.color }"/>` : ``) : `` }
           </diagonal>
        </border>
     `).join('\n') }
